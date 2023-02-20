@@ -26,6 +26,7 @@ exports.createBrandValidator = [
 
 exports.updateBrandValidator = [
   check("name")
+    .optional()
     .notEmpty()
     .withMessage("Brand name is required !")
     .isLength({ min: 3 })

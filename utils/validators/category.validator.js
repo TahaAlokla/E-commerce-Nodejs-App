@@ -26,6 +26,7 @@ exports.createCategoryValidator = [
 
 exports.updateCategoryValidator = [
   check("name")
+    .optional()
     .notEmpty()
     .withMessage("category name is required !")
     .isLength({ min: 3 })

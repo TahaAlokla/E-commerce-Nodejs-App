@@ -1,10 +1,31 @@
-// const slugify = require("slugify");
-// const asyncHandler = require("express-async-handler");
-// // const brandModal = require("../models/brand.model");
+const asyncHandler = require("express-async-handler");
+
 // const ApiError = require("../utils/apiError");
 // const ApiFeatures = require("../utils/apiFeatures");
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
 const factoryHandler = require("../services/handlersFactory");
 const brandModel = require("../models/brand.model");
+const {
+  uploadSingleImageInMemory,
+} = require("../middleware/uploadImage.middleware");
+
+exports.uploadBrandImage = uploadSingleImageInMemory("image");
+// resize the image
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  // here not need catch extension filename , ealready we know that jpeg
+  const file_name = `brand-${uuidv4()}.${"jpeg"}`;
+  await sharp(req.file.buffer)
+    .resize(600, 600)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`uploads/brands/${file_name}`);
+  // .toFile(path.join("uploads", "brands", `${file_name}`).toString());
+  // Save image into our db
+  req.body.image = file_name;
+
+  next();
+});
 // @desc   get list of brands
 // @route  GET /api/v1/brands
 // @access Public

@@ -10,8 +10,11 @@
     "rules": {
         // "prettier/prettier": "error",
         "spaced-comment": "off",
+        "import/no-extraneous-dependencies": "off",
+        "eslint-disable-next-line": "off",
         "node/no-unsupported-features/es-syntax": "off",
         "no-console": "off",
+        "camelcase": "off",
         "consistent-return": "off",
         "func-names": "off",
         "object-shorthand": "off",

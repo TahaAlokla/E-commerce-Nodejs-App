@@ -1,9 +1,63 @@
 // const slugify = require("slugify");
-// const asyncHandler = require("express-async-handler");
+
+const asyncHandler = require("express-async-handler");
+
+const multer = require("multer");
+
+const sharp = require("sharp");
+
+const { v4: uuidv4 } = require("uuid");
 const categoryModal = require("../models/category.model");
 // const ApiError = require("../utils/apiError");
 // const ApiFeatures = require("../utils/apiFeatures");
 const factoryHandler = require("../services/handlersFactory");
+const ApiError = require("../utils/apiError");
+const {
+  uploadSingleImageInMemory,
+} = require("../middleware/uploadImage.middleware");
+// configuration store for images  multer
+// disk store solution for images
+const multerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads");
+  },
+  filename: function (req, file, cb) {
+    const ext_file = file.mimetype.split("/").pop();
+    console.log("ext_file ", ext_file);
+    const file_name = `category-${uuidv4()}.${ext_file}`;
+    cb(null, file_name);
+  },
+});
+// MemoryStorage Engine multer
+// const multerStorageMemory = multer.memoryStorage();
+// accept image files only
+// const fileFilter = function (req, file, cb) {
+//   if (file.mimetype.startsWith("image")) {
+//     cb(null, true);
+//   } else {
+//     cb(new ApiError("only images allowed ", 400), false);
+//   }
+// };
+// const upload = multer({ storage: multerStorageMemory, fileFilter: fileFilter });
+
+// middleware for uploading categories
+// exports.uploadCategoryImage = upload.single("image");
+exports.uploadCategoryImage = uploadSingleImageInMemory("image");
+// resize the image
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  // here not need catch extension filename , ealready we know that jpeg
+  const file_name = `category-${uuidv4()}.${"jpeg"}`;
+  await sharp(req.file.buffer)
+    .resize(600, 600)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`uploads/${file_name}`);
+  // .toFile(path.join("uploads", "categories", `${file_name}`).toString());
+  // Save image into our db
+  req.body.image = file_name;
+
+  next();
+});
 // @desc   get list of categories
 // @route  GET /api/v1/categories
 // @access Public

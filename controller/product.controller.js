@@ -1,10 +1,58 @@
-const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
 const productModal = require("../models/product.model");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
 const factoryHandler = require("../services/handlersFactory");
 const productModel = require("../models/product.model");
+const { uploadMixOfImages } = require("../middleware/uploadImage.middleware");
+// MemoryStorage Engine multer
+
+// accept image files only
+
+exports.uploadCategoryImage = uploadMixOfImages([
+  { name: "imageCover", maxCount: 1 },
+  { name: "images", maxCount: 5 },
+]);
+exports.resizeProductImages = asyncHandler(async (req, res, next) => {
+  // console.log(req.files);
+  //1- Image processing for imageCover
+  if (req.files.imageCover) {
+    const imageCoverFileName = `product-${uuidv4()}-cover.jpeg`;
+
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat("jpeg")
+      .jpeg({ quality: 95 })
+      .toFile(`uploads/products/${imageCoverFileName}`);
+
+    // Save image into our db
+    req.body.imageCover = imageCoverFileName;
+  }
+  //2- Image processing for images
+  if (req.files.images) {
+    req.body.images = [];
+    await Promise.all(
+      req.files.images.map(async (img, index) => {
+        const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+
+        await sharp(img.buffer)
+          .resize(2000, 1333)
+          .toFormat("jpeg")
+          .jpeg({ quality: 95 })
+          .toFile(`uploads/products/${imageName}`);
+
+        // Save image into our db
+        req.body.images.push(imageName);
+      })
+    );
+
+    next();
+  }
+});
+// middleware for uploading categories
+// exports.uploadCategoryImage = upload.single("image");
 // @desc   get list of products
 // @route  GET /api/v1/products
 // @access Public

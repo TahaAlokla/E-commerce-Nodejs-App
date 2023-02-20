@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
 
@@ -8,12 +9,17 @@ const categoryRoute = require("./routes/category.route");
 const SubCategoryRoute = require("./routes/subCategory.route");
 const BrandsRoute = require("./routes/brand.route");
 const ProductRoute = require("./routes/product.route");
+const UsersRoute = require("./routes/user.route");
+const AuthRouter = require("./routes/auth.route");
 const globalError = require("./middleware/error.middleware");
 const { dbConfig } = require("./config/db.config");
 
 dbConfig();
 const app = express();
 app.use(express.json());
+// for get images from the database
+// url not stored with uploads just name image
+app.use(express.static(path.join(__dirname, "uploads")));
 // app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === "development") {
@@ -22,10 +28,11 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.use("/api/v1/categories", categoryRoute);
-// SubCategoryRoute
 app.use("/api/v1/subcategories", SubCategoryRoute);
 app.use("/api/v1/brands", BrandsRoute);
 app.use("/api/v1/products", ProductRoute);
+app.use("/api/v1/users", UsersRoute);
+app.use("/api/v1/auth", AuthRouter);
 // handling routing not exist
 app.all("*", (req, res, next) => {
   // const err = new Error(`can not find routing ${req.originalUrl}`);

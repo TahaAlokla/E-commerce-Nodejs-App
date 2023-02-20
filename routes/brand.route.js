@@ -5,8 +5,13 @@ const {
   getBrands,
   updateBrand,
   deleteBrand,
+  uploadBrandImage,
+  resizeImage,
 } = require("../controller/brand.controller");
-
+const {
+  protectAuthRequest,
+  allowedTo,
+} = require("../controller/auth.controller");
 const {
   getBrandValidator,
   createBrandValidator,
@@ -14,12 +19,29 @@ const {
   updateBrandValidator,
 } = require("../utils/validators/brand.validator");
 
-router.route("/").post(createBrandValidator, createBrand).get(getBrands);
+router
+  .route("/")
+  .post(
+    protectAuthRequest,
+    allowedTo("admin", "manager"),
+    uploadBrandImage,
+    resizeImage,
+    createBrandValidator,
+    createBrand
+  )
+  .get(getBrands);
 
 router
   .route("/:id")
   .get(getBrandValidator, getBrand)
-  .put(updateBrandValidator, updateBrand)
+  .put(
+    protectAuthRequest,
+    allowedTo("admin", "manager"),
+    uploadBrandImage,
+    resizeImage,
+    updateBrandValidator,
+    updateBrand
+  )
   .delete(deleteBrandValidator, deleteBrand);
 
 module.exports = router;

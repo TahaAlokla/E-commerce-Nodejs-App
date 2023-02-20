@@ -1,8 +1,8 @@
-const slugify = require("slugify");
+// const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const subCategoryModal = require("../models/subCategory.model");
-const ApiFeatures = require("../utils/apiFeatures");
+// const ApiFeatures = require("../utils/apiFeatures");
 const factoryHandler = require("../services/handlersFactory");
 const SubCategoryModal = require("../models/subCategory.model");
 // middleware for set category ro body
